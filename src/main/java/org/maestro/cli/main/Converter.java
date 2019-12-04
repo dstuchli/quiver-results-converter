@@ -1,6 +1,8 @@
 package main.java.org.maestro.cli.main;
 
 import java.io.*;
+// import java.util.HashMap;
+// import java.util.Map;
 
 public class Converter {
 
@@ -56,15 +58,36 @@ public class Converter {
     }
 
     public void convert() throws IOException {
-        // We need to provide file path as the parameter:
-        // double backquote is to avoid compiler interpret words
-        // like \test as \t (ie. as a escape sequence)
 
         final BufferedReader br = new BufferedReader(new FileReader(inputFile));
   
-        String st; 
-        while ((st = br.readLine()) != null)
-            System.out.println(st); 
+        String line; 
+        // Map<String, Long> newLine = new HashMap<>();
+        long messageCount = 0;
+        long currentTimestamp = 0;
+
+        while ((line = br.readLine()) != null) {
+
+            String[] currentLine = line.split(","); 
+
+            if (currentTimestamp == 0) {
+                currentTimestamp = Long.parseLong(currentLine[1]);
+            }
+
+            if (currentTimestamp < Long.parseLong(currentLine[1])) {
+                System.out.println("0," + messageCount + "," + currentTimestamp);
+
+                messageCount = 1;
+                currentTimestamp = Long.parseLong(currentLine[1]);
+
+                
+            } else {
+                messageCount += 1;
+            }
+            
+        }
+
+        System.out.println("0," + messageCount + "," + currentTimestamp);
 
         br.close();
 
