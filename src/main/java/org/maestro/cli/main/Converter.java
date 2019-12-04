@@ -23,7 +23,7 @@ public class Converter {
 
     /**
      * Class constructor for converter
-     * @param args consists of INPUT and OUTPUT strings
+     * @param args consists of INPUT strings for sender and receiver files
      */
 	public Converter(final String[] args) {
         parseCommand(args);
@@ -58,9 +58,13 @@ public class Converter {
      * Writes one record into the file
      */
     public void writeRecord() {
-
+        //TODO
     }
 
+    /**
+     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and calculates average throughput
+     * @throws IOException when there was an error during reading the file
+     */
     public void convert() throws IOException {
 
         final BufferedReader br = new BufferedReader(new FileReader(inputFile));
@@ -142,6 +146,10 @@ public class Converter {
         return filename;
     }
 
+    /**
+     * Calculates average latency based on information from receiver-transfers.csv
+     * @throws IOException when there was an error during reading the file
+     */
     public void calculateLatency() throws IOException {
         long latency = 0;
 
