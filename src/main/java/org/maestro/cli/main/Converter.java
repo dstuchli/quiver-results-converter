@@ -1,13 +1,15 @@
 package main.java.org.maestro.cli.main;
 
 import java.io.*;
-// import java.util.HashMap;
-// import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Converter {
 
 
     private File inputFile;
+    private File receiver;
 
     /**
      * Prints out help for converter
@@ -40,13 +42,15 @@ public class Converter {
         }
 
         final String inputPath = args[0];
+        final String receiverPath = args[1];
 
-        if (inputPath == null) {
+        if (inputPath == null || receiverPath == null) {
             System.err.println("Input file is required.");
             help();
         }
 
         inputFile = new File(inputPath);
+        receiver = new File(receiverPath);
 
     }
 
@@ -62,7 +66,7 @@ public class Converter {
         final BufferedReader br = new BufferedReader(new FileReader(inputFile));
   
         String line; 
-        // Map<String, Long> newLine = new HashMap<>();
+        Map<Long, Long> throughput = new HashMap<>();
         long messageCount = 0;
         long currentTimestamp = 0;
 
@@ -76,6 +80,7 @@ public class Converter {
 
             if (currentTimestamp < Long.parseLong(currentLine[1])) {
                 System.out.println("0," + messageCount + "," + currentTimestamp);
+                throughput.put(currentTimestamp, messageCount);
 
                 messageCount = 1;
                 currentTimestamp = Long.parseLong(currentLine[1]);
@@ -87,7 +92,24 @@ public class Converter {
             
         }
 
+
         System.out.println("0," + messageCount + "," + currentTimestamp);
+        throughput.put(currentTimestamp, messageCount); 
+
+        long averageMessageCount = 0;
+        long counter = 0;
+        Iterator it = throughput.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry<Long, Long> entry = (Map.Entry)it.next();
+            counter++;
+            averageMessageCount += entry.getValue();
+            
+             it.remove(); // avoids a ConcurrentModificationException
+        }
+        
+        System.out.println("------------------");
+        System.out.println("The average message count per timestamp: " + (averageMessageCount / counter));
 
         br.close();
 
@@ -95,6 +117,7 @@ public class Converter {
 
     public int run() throws IOException {
         convert();
+        calculateLatency();
         return 0;
     }
 
@@ -117,6 +140,26 @@ public class Converter {
             }
         }
         return filename;
+    }
+
+    public void calculateLatency() throws IOException {
+        long latency = 0;
+
+        final BufferedReader br = new BufferedReader(new FileReader(receiver));
+
+        String receiverLine;
+        int counter = 0;
+
+        while ((receiverLine = br.readLine()) != null) {
+            String[] currentReceiverLine = receiverLine.split(",");
+            
+            latency += Long.parseLong(currentReceiverLine[2]) - Long.parseLong(currentReceiverLine[1]);
+            counter++;
+        }
+
+        System.out.println("Average latency is: " + (latency / counter));
+
+        br.close();
     }
 
     
