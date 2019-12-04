@@ -1,7 +1,7 @@
 package main.java.org.maestro.cli.main;
 
+import java.io.IOException;
 import java.util.Arrays;
-
 
 public class MainCLI {
 
@@ -29,10 +29,10 @@ public class MainCLI {
         System.out.println(VERSION);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length == 0) {
-            System.out.println("You have to specify the action");
+            System.out.println("You have to specify the operation");
             help();
         }
 
@@ -56,7 +56,7 @@ public class MainCLI {
 
             }
             default: {
-                System.out.println("Unknown action!");
+                System.out.println("Unknown operation!");
                 help();
                 return;
             }
