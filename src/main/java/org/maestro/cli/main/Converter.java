@@ -1,145 +1,97 @@
 package main.java.org.maestro.cli.main;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+// TODO - the data are stored in sender/receiver.dat as binary data
 
 public class Converter {
 
-
     private File inputFile;
-    private File receiver;
+    private static final String SENDERFILE = "sender-transfers.csv";
+    private static final String RECEIVERFILE = "receiver-transfers.csv";
+
+    private static final String FORMAT_NAME = "maestro";
+    private static final String FORMAT_VERSION = "1";
+    private static final String MAESTRO_VERSION = "155";
+    private static int ROLE = 0;
 
     /**
      * Prints out help for converter
      */
     private static void help() {
         System.out.println("Usage: qres convert INPUT\n");
-        System.out.println("The convert utility converts the data that are stored in the file named by the INPUT operand.\n");
+        System.out.println(
+                "The convert utility converts the data that are stored in the file named by the INPUT operand.\n");
         System.exit(0);
 
     }
 
     /**
      * Class constructor for converter
+     * 
      * @param args consists of INPUT strings for sender and receiver files
      */
-	public Converter(final String[] args) {
+    public Converter(final String[] args) {
         parseCommand(args);
     }
 
     /**
      * Parses the arguments for the converter
      * 
-     * @param args consists of INPUT and OUTPUT strings
+     * @param args represents path to file
+     * 
+     *             TODO - Improve the parser to be more resilient
      */
     private void parseCommand(final String[] args) {
-
 
         if (args[0].equals("help")) {
             help();
         }
 
         final String inputPath = args[0];
-        final String receiverPath = args[1];
 
-        if (inputPath == null || receiverPath == null) {
-            System.err.println("Input file is required.");
+        if (inputPath == null) {
+            System.err.println("File as an argument is required.");
             help();
         }
 
-        inputFile = new File(inputPath);
-        receiver = new File(receiverPath);
-
-    }
-
-    /**
-     * Writes one record into the file
-     */
-    public void writeRecord() {
-        //TODO
-    }
-
-    /**
-     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and calculates average throughput
-     * @throws IOException when there was an error during reading the file
-     */
-    public void convert() throws IOException {
-
-        final BufferedReader br = new BufferedReader(new FileReader(inputFile));
-  
-        String line; 
-        Map<Long, Long> throughput = new HashMap<>();
-        long messageCount = 0;
-        long currentTimestamp = 0;
-
-        while ((line = br.readLine()) != null) {
-
-            String[] currentLine = line.split(","); 
-
-            if (currentTimestamp == 0) {
-                currentTimestamp = Long.parseLong(currentLine[1]);
-            }
-
-            if (currentTimestamp < Long.parseLong(currentLine[1])) {
-                System.out.println("0," + messageCount + "," + currentTimestamp);
-                throughput.put(currentTimestamp, messageCount);
-
-                messageCount = 1;
-                currentTimestamp = Long.parseLong(currentLine[1]);
-
-                
-            } else {
-                messageCount += 1;
-            }
-            
+        Process proc;
+        try {
+            // had a problem with permission denied had to change permissions manually
+            proc = new ProcessBuilder("src/main/scripts/unzipXZ.sh", inputPath).start();
+            // String[] cmd = { "sh", "src/main/scripts/unzipXZ.sh " + inputPath};
+            // proc = Runtime.getRuntime().exec(cmd);
+            proc.waitFor();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
+        inputFile = new File(inputPath.substring(0, inputPath.length() - 3));
 
-        System.out.println("0," + messageCount + "," + currentTimestamp);
-        throughput.put(currentTimestamp, messageCount); 
-
-        long averageMessageCount = 0;
-        long counter = 0;
-        Iterator it = throughput.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry<Long, Long> entry = (Map.Entry)it.next();
-            counter++;
-            averageMessageCount += entry.getValue();
-            
-             it.remove(); // avoids a ConcurrentModificationException
-        }
-        
-        System.out.println("------------------");
-        System.out.println("The average message count per timestamp: " + (averageMessageCount / counter));
-
-        br.close();
-
-    }
-
-    public int run() throws IOException {
-        convert();
-        calculateLatency();
-        return 0;
     }
 
     /**
      * Gets output filename according to the input file
+     * 
      * @return name of the output file
      * @throws Exception when the input file has invalid name
      */
     public String getOutputFileName() throws Exception {
         String filename;
-        if (inputFile.getName().equals("sender-transfers.csv.gz")) {
+        if (inputFile.getName().equals("sender-transfers.csv")) {
             filename = "sender.dat";
-        }
-        else {
-            if (inputFile.getName().equals("receiver-transfers.csv.gz")) {
+            ROLE = 1;
+        } else {
+            if (inputFile.getName().equals("receiver-transfers.csv")) {
                 filename = "receiver.dat";
-            }
-            else {
+                ROLE = 2;
+            } else {
                 throw new Exception("Invalid file name!");
             }
         }
@@ -147,13 +99,83 @@ public class Converter {
     }
 
     /**
+     * Writes one record into the file
+     */
+    public void writeRecord() {
+        // TODO
+    }
+
+    /**
+     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and
+     * calculates average throughput
+     * 
+     * @throws Exception
+     */
+    public void createSenderFile() throws Exception {
+
+        String outputFile = getOutputFileName();
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+
+        bw.write(getMaestroHeader());
+
+        String line;
+
+        // variables for avrage throughput calculation
+        long totalTimestampCount = 0;
+        long totalMessageCount = 0;
+
+        long messageCount = 0;
+        long currentTimestamp = 0;
+
+        while ((line = br.readLine()) != null) {
+            
+            String[] currentLine = line.split(",");
+            
+            if (currentTimestamp == 0) {
+                currentTimestamp = Long.parseLong(currentLine[1]);
+            }
+            
+            if (currentTimestamp < Long.parseLong(currentLine[1])) {
+                bw.append("0," + messageCount + "," + currentTimestamp + "\n");
+
+                totalMessageCount += messageCount;
+                totalTimestampCount++;
+                
+                messageCount = 1;
+                currentTimestamp = Long.parseLong(currentLine[1]);
+                
+            } else {
+                messageCount += 1;
+            }
+            
+        }
+
+        // last report
+        bw.append("0," + messageCount + "," + currentTimestamp + "\n");
+
+        System.out.println("The average message count per timestamp: " + (totalMessageCount / totalTimestampCount));
+
+        br.close();
+        bw.close();
+
+    }
+
+    private String getMaestroHeader() {
+        String header = FORMAT_NAME + "," + FORMAT_VERSION + "," + MAESTRO_VERSION + "," + ROLE + "\n";
+        return header;
+    }
+
+    /**
      * Calculates average latency based on information from receiver-transfers.csv
+     * 
      * @throws IOException when there was an error during reading the file
      */
-    public void calculateLatency() throws IOException {
+    public void createReceiverFile() throws IOException {
         long latency = 0;
 
-        final BufferedReader br = new BufferedReader(new FileReader(receiver));
+        final BufferedReader br = new BufferedReader(new FileReader(inputFile));
 
         String receiverLine;
         int counter = 0;
@@ -170,5 +192,44 @@ public class Converter {
         br.close();
     }
 
+    public int run() throws Exception {
+
+        if (inputFile.getName().equals(SENDERFILE)) {
+            createSenderFile();
+            createTestProperties();
+            createSystemProperties();
+        } else {
+            if (inputFile.getName().equals(RECEIVERFILE)) {
+                createReceiverFile();
+                createTestProperties();
+                createSystemProperties();
+                createHDRLatencyFile();
+            }
+        }
+        return 0;
+    }
+
+    private void createTestProperties() throws IOException {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("E M dd hh:mm:ss zzz yyyy");
+        BufferedWriter bw = new BufferedWriter(new FileWriter("test.properties"));
+        bw.write("#maestro-quiver-agent");
+        bw.append("#" + dateFormat.format(date));
+
+        bw.close();
+    }
+
+    private void createSystemProperties() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter("system.properties"));
+        bw.write("#maestro-quiver-agent");
+        bw.append("#TIME");
+
+        bw.close();
+
+    }
+
+    private void createHDRLatencyFile() {
+        // TODO
+    }
     
 }

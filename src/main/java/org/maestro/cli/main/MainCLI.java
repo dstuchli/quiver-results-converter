@@ -1,6 +1,5 @@
 package main.java.org.maestro.cli.main;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class MainCLI {
@@ -11,7 +10,7 @@ public class MainCLI {
      * Prints out the help
      */
     private static void help() {
-        System.out.println("Quiver results converter\n");
+        System.out.println("Quiver results converter v." + VERSION + "\n");
         System.out.println("Usage: qres <argument>\n");
 
         System.out.println("Arguments:");
@@ -29,7 +28,7 @@ public class MainCLI {
         System.out.println(VERSION);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         if (args.length == 0) {
             System.out.println("You have to specify the operation");
