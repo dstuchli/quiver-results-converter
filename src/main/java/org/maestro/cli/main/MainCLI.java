@@ -1,6 +1,5 @@
 package main.java.org.maestro.cli.main;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class MainCLI {
@@ -29,7 +28,7 @@ public class MainCLI {
         System.out.println(VERSION);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         if (args.length == 0) {
             System.out.println("You have to specify the operation");

@@ -17,4 +17,7 @@
 # Java class files
 *.class
 
+# Converter generated files
+sender.dat
+
 # eof

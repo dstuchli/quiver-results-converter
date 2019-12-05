@@ -10,6 +10,11 @@ public class Converter {
     private static final String SENDERFILE = "sender-transfers.csv";
     private static final String RECEIVERFILE = "receiver-transfers.csv";
 
+    private static final String FORMAT_NAME = "maestro";
+    private static final String FORMAT_VERSION = "1";
+    private static final String MAESTRO_VERSION = "155";
+    private static int ROLE = 0;
+
     /**
      * Prints out help for converter
      */
@@ -35,7 +40,7 @@ public class Converter {
      * 
      * @param args represents path to file
      * 
-     * TODO - Improve the parser to be more resilient
+     *             TODO - Improve the parser to be more resilient
      */
     private void parseCommand(final String[] args) {
 
@@ -54,8 +59,8 @@ public class Converter {
         try {
             // had a problem with permission denied had to change permissions manually
             proc = new ProcessBuilder("src/main/scripts/unzipXZ.sh", inputPath).start();
-            //String[] cmd = { "sh", "src/main/scripts/unzipXZ.sh " + inputPath};
-            //proc = Runtime.getRuntime().exec(cmd); 
+            // String[] cmd = { "sh", "src/main/scripts/unzipXZ.sh " + inputPath};
+            // proc = Runtime.getRuntime().exec(cmd);
             proc.waitFor();
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
@@ -65,12 +70,13 @@ public class Converter {
             e.printStackTrace();
         }
 
-        inputFile = new File(inputPath.substring(0, inputPath.length()-3));
+        inputFile = new File(inputPath.substring(0, inputPath.length() - 3));
 
     }
 
     /**
      * Gets output filename according to the input file
+     * 
      * @return name of the output file
      * @throws Exception when the input file has invalid name
      */
@@ -78,12 +84,12 @@ public class Converter {
         String filename;
         if (inputFile.getName().equals("sender-transfers.csv")) {
             filename = "sender.dat";
-        }
-        else {
+            ROLE = 1;
+        } else {
             if (inputFile.getName().equals("receiver-transfers.csv")) {
                 filename = "receiver.dat";
-            }
-            else {
+                ROLE = 2;
+            } else {
                 throw new Exception("Invalid file name!");
             }
         }
@@ -94,20 +100,27 @@ public class Converter {
      * Writes one record into the file
      */
     public void writeRecord() {
-        //TODO
+        // TODO
     }
 
     /**
-     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and calculates average throughput
-     * @throws IOException when there was an error during reading the file
+     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and
+     * calculates average throughput
+     * 
+     * @throws Exception
      */
-    public void convert() throws IOException {
+    public void convert() throws Exception {
 
-        final BufferedReader br = new BufferedReader(new FileReader(inputFile));
-  
+        String outputFile = getOutputFileName();
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+
+        bw.write(getMaestroHeader());
+
         String line;
 
-        //variables for avrage throughput calculation
+        // variables for avrage throughput calculation
         long totalTimestampCount = 0;
         long totalMessageCount = 0;
 
@@ -115,21 +128,21 @@ public class Converter {
         long currentTimestamp = 0;
 
         while ((line = br.readLine()) != null) {
-
+            
             String[] currentLine = line.split(",");
-
+            
             if (currentTimestamp == 0) {
                 currentTimestamp = Long.parseLong(currentLine[1]);
             }
-
+            
             if (currentTimestamp < Long.parseLong(currentLine[1])) {
-                System.out.println("0," + messageCount + "," + currentTimestamp);
+                bw.append("0," + messageCount + "," + currentTimestamp + "\n");
+
                 totalMessageCount += messageCount;
                 totalTimestampCount++;
-
+                
                 messageCount = 1;
                 currentTimestamp = Long.parseLong(currentLine[1]);
-
                 
             } else {
                 messageCount += 1;
@@ -137,18 +150,24 @@ public class Converter {
             
         }
 
+        // last report
+        bw.append("0," + messageCount + "," + currentTimestamp + "\n");
 
-        System.out.println("0," + messageCount + "," + currentTimestamp);
-        
-        System.out.println("------------------");
         System.out.println("The average message count per timestamp: " + (totalMessageCount / totalTimestampCount));
 
         br.close();
+        bw.close();
 
+    }
+
+    private String getMaestroHeader() {
+        String header = FORMAT_NAME + "," + FORMAT_VERSION + "," + MAESTRO_VERSION + "," + ROLE + "\n";
+        return header;
     }
 
     /**
      * Calculates average latency based on information from receiver-transfers.csv
+     * 
      * @throws IOException when there was an error during reading the file
      */
     public void calculateLatency() throws IOException {
@@ -171,7 +190,7 @@ public class Converter {
         br.close();
     }
 
-    public int run() throws IOException {
+    public int run() throws Exception {
 
         if (inputFile.getName().equals(SENDERFILE)) {
             convert();
