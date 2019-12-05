@@ -1,6 +1,8 @@
 package main.java.org.maestro.cli.main;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // TODO - the data are stored in sender/receiver.dat as binary data
 
@@ -109,7 +111,7 @@ public class Converter {
      * 
      * @throws Exception
      */
-    public void convert() throws Exception {
+    public void createSenderFile() throws Exception {
 
         String outputFile = getOutputFileName();
 
@@ -170,7 +172,7 @@ public class Converter {
      * 
      * @throws IOException when there was an error during reading the file
      */
-    public void calculateLatency() throws IOException {
+    public void createReceiverFile() throws IOException {
         long latency = 0;
 
         final BufferedReader br = new BufferedReader(new FileReader(inputFile));
@@ -193,13 +195,41 @@ public class Converter {
     public int run() throws Exception {
 
         if (inputFile.getName().equals(SENDERFILE)) {
-            convert();
+            createSenderFile();
+            createTestProperties();
+            createSystemProperties();
         } else {
             if (inputFile.getName().equals(RECEIVERFILE)) {
-                calculateLatency();
+                createReceiverFile();
+                createTestProperties();
+                createSystemProperties();
+                createHDRLatencyFile();
             }
         }
         return 0;
+    }
+
+    private void createTestProperties() throws IOException {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("E M dd hh:mm:ss zzz yyyy");
+        BufferedWriter bw = new BufferedWriter(new FileWriter("test.properties"));
+        bw.write("#maestro-quiver-agent");
+        bw.append("#" + dateFormat.format(date));
+
+        bw.close();
+    }
+
+    private void createSystemProperties() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter("system.properties"));
+        bw.write("#maestro-quiver-agent");
+        bw.append("#TIME");
+
+        bw.close();
+
+    }
+
+    private void createHDRLatencyFile() {
+        // TODO
     }
     
 }

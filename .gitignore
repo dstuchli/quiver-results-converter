@@ -19,5 +19,9 @@
 
 # Converter generated files
 sender.dat
+system.properties
+test.properties
+receiver.dat
+receiverd-latency.hdr
 
 # eof
