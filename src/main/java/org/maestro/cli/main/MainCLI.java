@@ -11,7 +11,7 @@ public class MainCLI {
      * Prints out the help
      */
     private static void help() {
-        System.out.println("Quiver results converter\n");
+        System.out.println("Quiver results converter v." + VERSION + "\n");
         System.out.println("Usage: qres <argument>\n");
 
         System.out.println("Arguments:");
