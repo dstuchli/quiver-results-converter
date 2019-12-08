@@ -17,6 +17,9 @@
 # Java class files
 *.class
 
+# Build dir
+target/
+
 # Converter generated files
 sender.dat
 system.properties

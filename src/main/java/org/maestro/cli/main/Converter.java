@@ -1,8 +1,6 @@
-package main.java.org.maestro.cli.main;
+package org.maestro.cli.main;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 // TODO - the data are stored in sender/receiver.dat as binary data
 
@@ -210,11 +208,8 @@ public class Converter {
     }
 
     private void createTestProperties() throws IOException {
-        Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("E M dd hh:mm:ss zzz yyyy");
         BufferedWriter bw = new BufferedWriter(new FileWriter("test.properties"));
         bw.write("#maestro-quiver-agent");
-        bw.append("#" + dateFormat.format(date));
 
         bw.close();
     }
@@ -222,7 +217,6 @@ public class Converter {
     private void createSystemProperties() throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter("system.properties"));
         bw.write("#maestro-quiver-agent");
-        bw.append("#TIME");
 
         bw.close();
 

@@ -1,4 +1,4 @@
-package main.java.org.maestro.cli.main;
+package org.maestro.cli.main;
 
 import java.util.Arrays;
 
