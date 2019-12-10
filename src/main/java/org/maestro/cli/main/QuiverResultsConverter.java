@@ -117,41 +117,15 @@ public class QuiverResultsConverter {
      */
     public void writeRecord(BinaryRateWriter brw, RateRecord record) {
         try {
-            brw.write(0, record.getCount(), TimeUnit.SECONDS.toMicros(record.getTimestamp().getEpochSecond()));
+            brw.write(0, record.getCount(), TimeUnit.MILLISECONDS.toMicros(record.getTimestamp().toEpochMilli()));
         } catch (IOException e) {
             System.err.println("I/O error while trying to convert the rate record: " + e.getMessage());
             e.printStackTrace();
         } catch (InvalidRecordException e) {
-            System.out.println(TimeUnit.SECONDS.toMicros(record.getTimestamp().getEpochSecond()));
-            System.err.println("Invalid record for entry for: " + record);
+            System.out.println(TimeUnit.MILLISECONDS.toMicros(record.getTimestamp().toEpochMilli()));
+            System.err.println("Invalid record for entry for: " + e.getMessage());
         }
     }
-
-    // private Instant processTimestamp(String timestamp) {
-    //     final int indexLen = 19;
-
-    //     try {
-    //         String period = timestamp.substring(0, indexLen);
-    //         RateRecord rateRecord = cache.get(period);
-
-    //         if (rateRecord == null) {
-    //             final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    //             Instant ataDate = formatter.parse(ata).toInstant();
-
-    //             rateRecord = new RateRecord(ataDate, 1);
-    //             cache.put(period, rateRecord);
-    //         } else {
-    //             long i = rateRecord.getCount();
-
-    //             i++;
-    //             assert i >= 0;
-    //             rateRecord.setCount(i);
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("Error parsing record with values ata {}: {}", ata, e.getMessage());
-    //     }
-    // }
 
     /**
      * Converts the data in sender-tranfers.csv to correct Maestro Data Format and
@@ -176,9 +150,9 @@ public class QuiverResultsConverter {
             String[] currentLine = line.split(",");
             long currentTimestamp = 0;
             if (isSender == 1) {
-                currentTimestamp = Long.parseLong(currentLine[1]);
+                currentTimestamp = Long.parseLong(currentLine[1]) / 1000;
             } else {
-                currentTimestamp = Long.parseLong(currentLine[2]);
+                currentTimestamp = Long.parseLong(currentLine[2]) / 1000;
             }
 
             if (timestamp == 0) {
@@ -187,9 +161,10 @@ public class QuiverResultsConverter {
 
             if (timestamp < currentTimestamp) {
 
-                System.out.println("ORIGINAL: " + timestamp);
-                System.out.println("EpochMilli: " + Instant.ofEpochMilli(timestamp));
-                record = new RateRecord(Instant.ofEpochMilli(timestamp), messageCount);
+                // System.out.println("ORIGINAL: " + timestamp + " < " + currentTimestamp);
+                // System.out.println("COUNT: " + messageCount);
+                // System.out.println(Instant.ofEpochSecond(timestamp));
+                record = new RateRecord(Instant.ofEpochMilli(timestamp * 1000), messageCount);
                 data.add(record);
 
                 messageCount = 1;
@@ -202,7 +177,7 @@ public class QuiverResultsConverter {
         }
 
         // last record
-        record = new RateRecord(Instant.ofEpochMilli(timestamp), messageCount);
+        record = new RateRecord(Instant.ofEpochMilli(timestamp * 1000), messageCount);
         data.add(record);
 
         br.close();
@@ -253,7 +228,13 @@ public class QuiverResultsConverter {
 
         ArrayList<String> properties = readTestProperties();
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter("test.properties"));
+        BufferedWriter bw;
+        String path = jsonFile.getAbsolutePath();
+        if (isSender == 1) {
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties")));
+        } else {
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties-rec")));
+        }
         bw.write("#maestro-quiver-agent\n");
         bw.append("fcl=0\n");
         bw.append("parallelCount=1\n");
@@ -262,8 +243,7 @@ public class QuiverResultsConverter {
         bw.append("limitDestinations=0\n");
         bw.append("durationType=count\n");
         bw.append("rate=" + properties.get(4) + "\n");
-        // TODO find out if quiver defines variableSize
-        bw.append("variableSize=???\n");
+        bw.append("variableSize=false\n");
         bw.append("apiVersion=1.1\n");
         bw.append("brokerUri=" + properties.get(1) + "\n");
         bw.append("messageSize=" + properties.get(3) + "\n");
@@ -313,5 +293,5 @@ public class QuiverResultsConverter {
         // TODO
     }
 
-    
+
 }
