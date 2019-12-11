@@ -18,7 +18,6 @@ import org.maestro.common.io.data.writers.BinaryRateWriter;
 import org.maestro.plotter.rate.RateData;
 import org.maestro.plotter.rate.RateRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 
 public class QuiverResultsConverter {
 
