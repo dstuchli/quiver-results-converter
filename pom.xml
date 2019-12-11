@@ -17,13 +17,17 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>maestro-java</id>
-      <name>Maestro</name>
-      <url>file:///Users/dstuchli/Git/bachelorThesis/maestrorepo</url>
-    </repository>
-  </repositories>
+     <repositories>
+        <repository>
+            <id>Eclipse Paho Repo</id>
+            <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+        </repository>
+
+        <repository>
+            <id>orpiske-repo</id>
+            <url>https://dl.bintray.com/orpiske/libs-release</url>
+        </repository>
+    </repositories>
 
   <dependencies>
     <dependency>
@@ -35,17 +39,17 @@
     <dependency>
       <groupId>org.maestro</groupId>
       <artifactId>maestro-common</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>org.maestro</groupId>
-      <artifactId>maestro-plotter</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <artifactId>maestro-plotter-rate</artifactId>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>org.maestro</groupId>
       <artifactId>maestro-plotter-common</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>

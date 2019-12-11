@@ -10,15 +10,7 @@ fi
 
 MAESTRO_CLASSPATH=""
 
-# for jarfile in "${installDir}"/bin/*.jar ; do
-#     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
-#         MAESTRO_CLASSPATH="${jarfile}"
-#     else
-#         MAESTRO_CLASSPATH="${MAESTRO_CLASSPATH}:${jarfile}"
-#     fi
-# done
-
-for jarfile in "${installDir}"/target/*.jar ; do
+for jarfile in "${installDir}"/bin/*.jar ; do
     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
         MAESTRO_CLASSPATH="${jarfile}"
     else
@@ -26,8 +18,7 @@ for jarfile in "${installDir}"/target/*.jar ; do
     fi
 done
 
-
-# for jarfile in "${installDir}"/lib/*.jar ; do
+# for jarfile in "${installDir}"/target/*.jar ; do
 #     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
 #         MAESTRO_CLASSPATH="${jarfile}"
 #     else
@@ -35,13 +26,22 @@ done
 #     fi
 # done
 
-# for jarfile in "${installDir}"/lib/ext/*.jar ; do
-#     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
-#         MAESTRO_CLASSPATH="${jarfile}"
-#     else
-#         MAESTRO_CLASSPATH="${MAESTRO_CLASSPATH}:${jarfile}"
-#     fi
-# done
+
+for jarfile in "${installDir}"/lib/*.jar ; do
+    if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
+        MAESTRO_CLASSPATH="${jarfile}"
+    else
+        MAESTRO_CLASSPATH="${MAESTRO_CLASSPATH}:${jarfile}"
+    fi
+done
+
+for jarfile in "${installDir}"/lib/ext/*.jar ; do
+    if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
+        MAESTRO_CLASSPATH="${jarfile}"
+    else
+        MAESTRO_CLASSPATH="${MAESTRO_CLASSPATH}:${jarfile}"
+    fi
+done
 
 mainClass="org.maestro.cli.main.MainCLI"
 

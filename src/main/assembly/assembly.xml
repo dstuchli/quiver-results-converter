@@ -41,8 +41,7 @@
 	</formats>
 	<fileSets>
 		<fileSet>
-			<!-- <directory>${project.basedir}</directory> -->
-            <directory>src/main/java/org/maestro/cli/main</directory>
+			<directory>${project.basedir}</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>README.md</include>
@@ -51,8 +50,8 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>target</directory>
-			<outputDirectory>/target</outputDirectory>
+			<directory>${project.build.directory}</directory>
+			<outputDirectory>/bin</outputDirectory>
 			<includes>
 				<include>*.jar</include>
 			</includes>
@@ -67,29 +66,32 @@
 			<includes>
 				<include>**/*.*</include>
 			</includes>
+			<excludes>
+				<exclude>unzipXZ.sh</exclude>
+			</excludes>
 			<fileMode>0755</fileMode>
 		</fileSet>
 
-		<!-- <fileSet>
+		<fileSet>
 			<directory>${project.basedir}/src/main/resources/config</directory>
 			<outputDirectory>/config</outputDirectory>
 			<includes>
 				<include>**/*.*</include>
 			</includes>
-		</fileSet> -->
-		<!-- <fileSet>
+		</fileSet>
+		<fileSet>
 			<directory>${project.build.directory}/classes/scripts</directory>
 			<outputDirectory>scripts</outputDirectory>
-		</fileSet> -->
+		</fileSet>
 	</fileSets>
 
 	<includeBaseDirectory>true</includeBaseDirectory>
-	<!-- <dependencySets>
+	<dependencySets>
 		<dependencySet>
 			<outputDirectory>/lib</outputDirectory>
 			<useProjectArtifact>false</useProjectArtifact>
 			<unpack>false</unpack>
 			<scope>runtime</scope>
 		</dependencySet>
-	</dependencySets> -->
+	</dependencySets>
 </assembly>
