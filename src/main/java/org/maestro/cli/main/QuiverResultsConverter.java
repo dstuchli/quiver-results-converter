@@ -14,9 +14,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.maestro.common.io.data.common.FileHeader;
 import org.maestro.common.io.data.common.exceptions.InvalidRecordException;
-import org.maestro.common.io.data.writers.*;
-import org.maestro.plotter.rate.*;
-import org.apache.commons.lang.StringUtils;
+import org.maestro.common.io.data.writers.BinaryRateWriter;
+import org.maestro.plotter.rate.RateData;
+import org.maestro.plotter.rate.RateRecord;
+import org.apache.commons.lang3.StringUtils;
 
 public class QuiverResultsConverter {
 
@@ -75,7 +76,7 @@ public class QuiverResultsConverter {
         Process proc;
         try {
             // had a problem with permission denied had to change permissions manually
-            proc = new ProcessBuilder("src/main/scripts/unzipXZ.sh", dataInputPath).start();
+            proc = new ProcessBuilder("/Users/dstuchli/Git/bachelorThesis/quiver-results-converter/src/main/scripts/unzipXZ.sh", dataInputPath).start();
             proc.waitFor();
         } catch (InterruptedException e) {
             e.printStackTrace();

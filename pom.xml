@@ -17,13 +17,17 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>maestro-java</id>
-      <name>Maestro</name>
-      <url>file:///Users/dstuchli/Git/bachelorThesis/maestrorepo</url>
-    </repository>
-  </repositories>
+     <repositories>
+        <repository>
+            <id>Eclipse Paho Repo</id>
+            <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+        </repository>
+
+        <repository>
+            <id>orpiske-repo</id>
+            <url>https://dl.bintray.com/orpiske/libs-release</url>
+        </repository>
+    </repositories>
 
   <dependencies>
     <dependency>
@@ -35,22 +39,37 @@
     <dependency>
       <groupId>org.maestro</groupId>
       <artifactId>maestro-common</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>org.maestro</groupId>
-      <artifactId>maestro-plotter</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <artifactId>maestro-plotter-rate</artifactId>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>org.maestro</groupId>
       <artifactId>maestro-plotter-common</artifactId>
-      <version>1.5.6-SNAPSHOT</version>
+      <version>1.5.5</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
       <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.25</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.25</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.8</version>
     </dependency>
   </dependencies>
 
@@ -99,4 +118,37 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>Package</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+              <descriptors>
+                <descriptor>
+                    src/main/assembly/assembly.xml
+                </descriptor>
+              </descriptors>
+              <appendAssemblyId>true</appendAssemblyId>
+            </configuration>
+            <executions>
+              <execution>
+                <id>dist-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
