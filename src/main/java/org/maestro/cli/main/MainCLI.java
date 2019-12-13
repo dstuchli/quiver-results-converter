@@ -11,10 +11,11 @@ public class MainCLI {
      */
     private static void help() {
         System.out.println("Quiver results converter v." + VERSION + "\n");
-        System.out.println("Usage: qres <argument>\n");
+        System.out.println("Usage: <Action>\n");
 
-        System.out.println("Arguments:");
-        System.out.println("    convert\n");
+        System.out.println("Action:");
+        System.out.println("    convert <arguments>\n");
+        System.out.println("        Arguments being the .csv.xz file and .json file from sender or receiver");
         System.out.println("    help");
         System.out.println("    version");
 
@@ -28,7 +29,7 @@ public class MainCLI {
         System.out.println(VERSION);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         if (args.length == 0) {
             System.out.println("You have to specify the operation");

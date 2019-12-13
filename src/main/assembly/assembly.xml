@@ -45,8 +45,7 @@
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>README.md</include>
-				<!-- <include>LICENSE*</include> TODO create -->
-				<!-- <include>NOTICE*</include> TODO create -->
+				<include>LICENSE</include>
 			</includes>
 		</fileSet>
 		<fileSet>

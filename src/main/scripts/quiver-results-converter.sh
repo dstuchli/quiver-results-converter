@@ -18,15 +18,6 @@ for jarfile in "${installDir}"/bin/*.jar ; do
     fi
 done
 
-# for jarfile in "${installDir}"/target/*.jar ; do
-#     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
-#         MAESTRO_CLASSPATH="${jarfile}"
-#     else
-#         MAESTRO_CLASSPATH="${MAESTRO_CLASSPATH}:${jarfile}"
-#     fi
-# done
-
-
 for jarfile in "${installDir}"/lib/*.jar ; do
     if [[ -z "${MAESTRO_CLASSPATH}" ]] ; then
         MAESTRO_CLASSPATH="${jarfile}"
