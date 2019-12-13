@@ -48,7 +48,7 @@ public class QuiverResultsConverter {
     /**
      * Parses the arguments for the converter
      * 
-     * @param args represents path to file
+     * @param args represents paths to files
      * 
      *             TODO - Improve the parser to be more resilient
      */
@@ -75,8 +75,7 @@ public class QuiverResultsConverter {
 
         Process proc;
         try {
-            // had a problem with permission denied had to change permissions manually
-            proc = new ProcessBuilder("/Users/dstuchli/Git/bachelorThesis/quiver-results-converter/src/main/scripts/unzipXZ.sh", dataInputPath).start();
+            proc = new ProcessBuilder("xz", "-d" + dataInputPath).start();
             proc.waitFor();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -94,7 +93,7 @@ public class QuiverResultsConverter {
     }
 
     /**
-     * Gets output filename according to the input file
+     * Gets output filename according to the data file
      * 
      * @return name of the output file
      * @throws FileNotFoundException when the input file has invalid name
@@ -115,6 +114,8 @@ public class QuiverResultsConverter {
 
     /**
      * Writes one record into the file
+     * @param brw writer used to write the records to binary file
+     * @param record record to be written into the output file
      */
     public void writeRecord(BinaryRateWriter brw, RateRecord record) {
         try {
@@ -129,13 +130,12 @@ public class QuiverResultsConverter {
     }
 
     /**
-     * Converts the data in sender-tranfers.csv to correct Maestro Data Format and
-     * calculates average throughput
+     * Converts the data in dataInputFile to correct Maestro Data Format
      * 
-     * @throws IOException
-     * @throws NumberFormatException
+     * @return RateData including all records already converted to right format
+     * @throws IOException when reading of the dataInputFile was unsuccessful
      */
-    public RateData convertResults() throws NumberFormatException, IOException {
+    public RateData convertResults() throws IOException {
 
         BufferedReader br = new BufferedReader(new FileReader(dataInputFile));
 
@@ -162,9 +162,6 @@ public class QuiverResultsConverter {
 
             if (timestamp < currentTimestamp) {
 
-                // System.out.println("ORIGINAL: " + timestamp + " < " + currentTimestamp);
-                // System.out.println("COUNT: " + messageCount);
-                // System.out.println(Instant.ofEpochSecond(timestamp));
                 record = new RateRecord(Instant.ofEpochMilli(timestamp * 1000), messageCount);
                 data.add(record);
 
@@ -177,7 +174,6 @@ public class QuiverResultsConverter {
 
         }
 
-        // last record
         record = new RateRecord(Instant.ofEpochMilli(timestamp * 1000), messageCount);
         data.add(record);
 
@@ -187,7 +183,13 @@ public class QuiverResultsConverter {
 
     }
 
-    private BinaryRateWriter getWriter() throws IOException {
+    /**
+     * Creates correct writer based on dataInputFile name
+     * 
+     * @return BinaryRateWriter with correct File header
+     * @throws IOException when writing to the output file was unsuccessful
+     */
+    public BinaryRateWriter getWriter() throws IOException {
         String outputFileName = getOutputFileName();
 
 
@@ -204,55 +206,12 @@ public class QuiverResultsConverter {
         return brw;
     }
 
-    public int run() {
-
-        try (BinaryRateWriter brw = getWriter()) {
-            final RateData rateData = convertResults();
-            final Set<RateRecord> records = rateData.getRecordSet();
-
-            records.forEach(record -> writeRecord(brw, record));
-
-            createTestProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // createSystemProperties();
-
-        if (isSender == 0) {
-            createHDRLatencyFile();
-        }
-        return 0;
-    }
-
-    private void createTestProperties() throws IOException {
-
-        ArrayList<String> properties = readTestProperties();
-
-        BufferedWriter bw;
-        String path = jsonFile.getAbsolutePath();
-        if (isSender == 1) {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties")));
-        } else {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties-rec")));
-        }
-        bw.write("#maestro-quiver-agent\n");
-        bw.append("fcl=0\n");
-        bw.append("parallelCount=1\n");
-        bw.append("apiName=" + properties.get(0) + "\n");
-        bw.append("duration=" + properties.get(2) + "\n");
-        bw.append("limitDestinations=0\n");
-        bw.append("durationType=count\n");
-        bw.append("rate=" + properties.get(4) + "\n");
-        bw.append("variableSize=false\n");
-        bw.append("apiVersion=1.1\n");
-        bw.append("brokerUri=" + properties.get(1) + "\n");
-        bw.append("messageSize=" + properties.get(3) + "\n");
-        bw.append("protocol=AMQP");
-        bw.close();
-    }
-
-    private ArrayList<String> readTestProperties() throws IOException {
+    /**
+     * Reads test summary from quiver
+     * @return list of all data needed for test.properties file
+     * @throws IOException when reading of the file was unsuccessful
+     */
+    public ArrayList<String> readTestProperties() throws IOException {
         ArrayList<String> testProperties = new ArrayList<>();
         
         final BufferedReader br = new BufferedReader(new FileReader(jsonFile));
@@ -286,13 +245,67 @@ public class QuiverResultsConverter {
         return testProperties;
     }
 
-    // private void createSystemProperties() throws IOException {
-    //     // TODO
-    // }
+    /**
+     * Creates test.properties file for sender or receiver
+     * @throws IOException when writing to the file was unsuccessful
+     */
+    public void createTestProperties() throws IOException {
 
-    private void createHDRLatencyFile() {
+        ArrayList<String> properties = readTestProperties();
+
+        BufferedWriter bw;
+        String path = jsonFile.getAbsolutePath();
+        if (isSender == 1) {
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties")));
+        } else {
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties-rec")));
+        }
+        bw.write("#maestro-quiver-agent\n");
+        bw.append("fcl=0\n");
+        bw.append("parallelCount=1\n");
+        bw.append("apiName=" + properties.get(0) + "\n");
+        bw.append("duration=" + properties.get(2) + "\n");
+        bw.append("limitDestinations=0\n");
+        bw.append("durationType=count\n");
+        bw.append("rate=" + properties.get(4) + "\n");
+        bw.append("variableSize=false\n");
+        bw.append("apiVersion=1.1\n");
+        bw.append("brokerUri=" + properties.get(1) + "\n");
+        bw.append("messageSize=" + properties.get(3) + "\n");
+        bw.append("protocol=AMQP");
+        bw.close();
+    }
+
+    public void createHDRLatencyFile() {
         // TODO
     }
 
+    /**
+     * Wrapper for all methodes. Runs the utility itself.
+     * @return integer representing success of the run
+     */
+    public int run() {
+
+        try (BinaryRateWriter brw = getWriter()) {
+            final RateData rateData = convertResults();
+            final Set<RateRecord> records = rateData.getRecordSet();
+
+            records.forEach(record -> writeRecord(brw, record));
+
+            createTestProperties();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 1;
+        }
+
+        if (isSender == 0) {
+            createHDRLatencyFile();
+        }
+        return 0;
+    }
+
+    // private void createSystemProperties() throws IOException {
+    //     // TODO
+    // }
 
 }
