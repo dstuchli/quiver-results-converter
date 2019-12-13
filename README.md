@@ -13,10 +13,13 @@ After extracting the tarball you can find the run script in `bin/` folder.
 
 Basic usage of the run script:
 ```
-    convert <arguments>
-        Arguments being the .csv.xz file and .json file. Both with sender or both with receiver prefix.
-    help
-    version
+    ./quiver-results-converter.sh <Action>
+
+    Actions:
+        convert <arguments>
+            Arguments being the .csv.xz file and .json file. Both with sender or both with receiver prefix.
+        help
+        version
 ```
 
 License
