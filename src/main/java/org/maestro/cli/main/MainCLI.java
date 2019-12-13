@@ -9,13 +9,12 @@ public class MainCLI {
     /**
      * Prints out the help
      */
-    private static void help(int exitNum) {
+    static void help(int exitNum) {
         System.out.println("Quiver results converter v." + VERSION + "\n");
-        System.out.println("Usage: <Action>\n");
-
-        System.out.println("Action:");
+        System.out.println("Usage:\n");
+        
         System.out.println("    convert <arguments>");
-        System.out.println("        Arguments being the .csv.xz file and .json file from sender or receiver\n");
+        System.out.println("        Arguments being the .csv.xz file and .json file. Both with sender or both with receiver prefix.\n");
         System.out.println("    help");
         System.out.println("    version");
 

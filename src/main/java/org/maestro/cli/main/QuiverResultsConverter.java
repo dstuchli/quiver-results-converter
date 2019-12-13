@@ -26,17 +26,6 @@ public class QuiverResultsConverter {
     private static int isSender = 0;
 
     /**
-     * Prints out help for converter
-     */
-    private static void help() {
-        System.out.println("Usage: qres convert INPUT\n");
-        System.out.println(
-                "The convert utility converts the data that are stored in the file named by the INPUT operand.\n");
-        System.exit(0);
-
-    }
-
-    /**
      * Class constructor for converter
      * 
      * @param args consists of INPUT strings for sender and receiver files
@@ -55,12 +44,12 @@ public class QuiverResultsConverter {
     private void parseCommand(final String[] args) {
 
         if (args[0].equals("help")) {
-            help();
+            MainCLI.help(0);
         }
 
         if (args.length < 2) {
-            System.err.println("Files .xz and .json are needed.");
-            help();
+            System.err.println("Files .csv.xz and .json are needed.");
+            MainCLI.help(1);
         }
 
         String dataInputPath = args[0];
