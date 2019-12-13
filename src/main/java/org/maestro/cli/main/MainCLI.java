@@ -11,8 +11,8 @@ public class MainCLI {
      */
     static void help(int exitNum) {
         System.out.println("Quiver results converter v." + VERSION + "\n");
-        System.out.println("Usage:\n");
-        
+        System.out.println("Usage: ./quiver-results-converter.sh <Action>\n");
+        System.out.println("Actions:");
         System.out.println("    convert <arguments>");
         System.out.println("        Arguments being the .csv.xz file and .json file. Both with sender or both with receiver prefix.\n");
         System.out.println("    help");
