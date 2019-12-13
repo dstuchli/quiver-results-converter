@@ -75,7 +75,7 @@ public class QuiverResultsConverter {
 
         Process proc;
         try {
-            proc = new ProcessBuilder("xz", "-d" + dataInputPath).start();
+            proc = new ProcessBuilder("xz", "-d", dataInputPath).start();
             proc.waitFor();
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -9,17 +9,17 @@ public class MainCLI {
     /**
      * Prints out the help
      */
-    private static void help() {
+    private static void help(int exitNum) {
         System.out.println("Quiver results converter v." + VERSION + "\n");
         System.out.println("Usage: <Action>\n");
 
         System.out.println("Action:");
-        System.out.println("    convert <arguments>\n");
-        System.out.println("        Arguments being the .csv.xz file and .json file from sender or receiver");
+        System.out.println("    convert <arguments>");
+        System.out.println("        Arguments being the .csv.xz file and .json file from sender or receiver\n");
         System.out.println("    help");
         System.out.println("    version");
 
-        System.exit(0);
+        System.exit(exitNum);
     }
 
     /**
@@ -32,8 +32,8 @@ public class MainCLI {
     public static void main(String[] args) {
 
         if (args.length == 0) {
-            System.out.println("You have to specify the operation");
-            help();
+            System.err.println("You have to specify the operation");
+            help(1);
         }
 
         String arg = args[0];
@@ -43,7 +43,7 @@ public class MainCLI {
 
         switch(arg) {
             case "help": {
-                help();
+                help(0);
                 return;
             }
             case "version": {
@@ -57,7 +57,7 @@ public class MainCLI {
             }
             default: {
                 System.out.println("Unknown operation!");
-                help();
+                help(1);
                 return;
             }
         }
