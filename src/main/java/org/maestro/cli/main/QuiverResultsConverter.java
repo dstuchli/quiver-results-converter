@@ -121,8 +121,8 @@ public class QuiverResultsConverter {
             System.err.println("I/O error while trying to convert the rate record: " + e.getMessage());
             e.printStackTrace();
         } catch (InvalidRecordException e) {
-            System.out.println(TimeUnit.MILLISECONDS.toMicros(record.getTimestamp().toEpochMilli()));
             System.err.println("Invalid record for entry for: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -189,16 +189,27 @@ public class QuiverResultsConverter {
     public BinaryRateWriter getWriter() throws IOException {
         String outputFileName = getOutputFileName();
 
-
-        File output = new File(dataInputFile.getParent(), outputFileName);
-
+        File outputFolder;
         BinaryRateWriter brw;
-        if (outputFileName.equals("sender.dat")) {
+        File output;
+
+        if (isSender == 1) {
+            outputFolder = new File(dataInputFile.getParent(), "sender/");
+            if (!outputFolder.exists()) {
+                outputFolder.getParentFile().mkdirs();
+            }
+            output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_SENDER);
-        }
-        else {
+        } else {
+            outputFolder = new File(dataInputFile.getParent(), "receiver/");
+            if (!outputFolder.exists()) {
+                outputFolder.getParentFile().mkdirs();
+            }
+            output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_RECEIVER);
         }
+
+        // File output = new File(dataInputFile.getParentFile(), outputFileName);
 
         return brw;
     }
@@ -253,9 +264,9 @@ public class QuiverResultsConverter {
         BufferedWriter bw;
         String path = jsonFile.getAbsolutePath();
         if (isSender == 1) {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "sender/test.properties")));
         } else {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties-rec")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "receiver/test.properties")));
         }
         bw.write("#maestro-quiver-agent\n");
         bw.append("fcl=0\n");
@@ -294,7 +305,7 @@ public class QuiverResultsConverter {
         }
         latencyEvaluator.record(histogram);
 
-        LatencyWriter lw = new LatencyWriter(new File(baseDir, "receiverd-latency.hdr"));
+        LatencyWriter lw = new LatencyWriter(new File(baseDir, "receiver/receiverd-latency.hdr"));
         lw.outputLegend(startedEpochMillis);
         lw.outputIntervalHistogram(histogram);
 
@@ -310,9 +321,8 @@ public class QuiverResultsConverter {
      */
     public int run() {
 
-        RateData rateData;
         try (BinaryRateWriter brw = getWriter()) {
-            rateData = convertResults();
+            RateData rateData = convertResults();
             final Set<RateRecord> records = rateData.getRecordSet();
 
             records.forEach(record -> writeRecord(brw, record));
