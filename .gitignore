@@ -22,6 +22,5 @@ target/
 
 # Converter generated files
 system.properties
-receiverd-latency.hdr
 
 # eof
