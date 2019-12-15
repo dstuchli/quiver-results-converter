@@ -196,14 +196,14 @@ public class QuiverResultsConverter {
         if (isSender == 1) {
             outputFolder = new File(dataInputFile.getParent(), "sender/");
             if (!outputFolder.exists()) {
-                outputFolder.getParentFile().mkdirs();
+                outputFolder.mkdirs();
             }
             output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_SENDER);
         } else {
             outputFolder = new File(dataInputFile.getParent(), "receiver/");
             if (!outputFolder.exists()) {
-                outputFolder.getParentFile().mkdirs();
+                outputFolder.mkdirs();
             }
             output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_RECEIVER);
