@@ -12,18 +12,24 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.maestro.common.evaluators.HardLatencyEvaluator;
+import org.maestro.common.evaluators.LatencyEvaluator;
 import org.maestro.common.io.data.common.FileHeader;
 import org.maestro.common.io.data.common.exceptions.InvalidRecordException;
 import org.maestro.common.io.data.writers.BinaryRateWriter;
+import org.maestro.common.io.data.writers.LatencyWriter;
 import org.maestro.plotter.rate.RateData;
 import org.maestro.plotter.rate.RateRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.HdrHistogram.Histogram;
 
 public class QuiverResultsConverter {
 
     private File dataInputFile;
     private File jsonFile;
     private static int isSender = 0;
+    private static final long MAX_LATENCY = 2000000000;
+    private static String baseDir;
 
     /**
      * Class constructor for converter
@@ -61,6 +67,8 @@ public class QuiverResultsConverter {
         } else {
             jsonFilePath = args[1];
         }
+
+        baseDir = dataInputPath.substring(0, dataInputPath.lastIndexOf("/"));
 
         Process proc;
         try {
@@ -113,8 +121,8 @@ public class QuiverResultsConverter {
             System.err.println("I/O error while trying to convert the rate record: " + e.getMessage());
             e.printStackTrace();
         } catch (InvalidRecordException e) {
-            System.out.println(TimeUnit.MILLISECONDS.toMicros(record.getTimestamp().toEpochMilli()));
             System.err.println("Invalid record for entry for: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -181,16 +189,27 @@ public class QuiverResultsConverter {
     public BinaryRateWriter getWriter() throws IOException {
         String outputFileName = getOutputFileName();
 
-
-        File output = new File(dataInputFile.getParent(), outputFileName);
-
+        File outputFolder;
         BinaryRateWriter brw;
-        if (outputFileName.equals("sender.dat")) {
+        File output;
+
+        if (isSender == 1) {
+            outputFolder = new File(dataInputFile.getParent(), "sender/");
+            if (!outputFolder.exists()) {
+                outputFolder.getParentFile().mkdirs();
+            }
+            output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_SENDER);
-        }
-        else {
+        } else {
+            outputFolder = new File(dataInputFile.getParent(), "receiver/");
+            if (!outputFolder.exists()) {
+                outputFolder.getParentFile().mkdirs();
+            }
+            output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_RECEIVER);
         }
+
+        // File output = new File(dataInputFile.getParentFile(), outputFileName);
 
         return brw;
     }
@@ -245,9 +264,9 @@ public class QuiverResultsConverter {
         BufferedWriter bw;
         String path = jsonFile.getAbsolutePath();
         if (isSender == 1) {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "sender/test.properties")));
         } else {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "test.properties-rec")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "receiver/test.properties")));
         }
         bw.write("#maestro-quiver-agent\n");
         bw.append("fcl=0\n");
@@ -265,8 +284,35 @@ public class QuiverResultsConverter {
         bw.close();
     }
 
-    public void createHDRLatencyFile() {
-        // TODO
+    /**
+     * creates latency file for receiver
+     * @throws IOException
+     */
+    public void createHDRLatencyFile() throws IOException {
+        Histogram histogram = new Histogram(1);
+        LatencyEvaluator latencyEvaluator = new HardLatencyEvaluator(MAX_LATENCY);
+        long startedEpochMillis = System.currentTimeMillis();
+
+        BufferedReader br = new BufferedReader(new FileReader(dataInputFile));
+
+        String line;
+        long latency = 0;
+        while((line = br.readLine()) != null) {
+            String[] currentLine = line.split(",");
+            latency = Long.parseLong(currentLine[2]) - Long.parseLong(currentLine[1]);
+            histogram.recordValue(latency);
+
+        }
+        latencyEvaluator.record(histogram);
+
+        LatencyWriter lw = new LatencyWriter(new File(baseDir, "receiver/receiverd-latency.hdr"));
+        lw.outputLegend(startedEpochMillis);
+        lw.outputIntervalHistogram(histogram);
+
+        lw.close();
+
+        br.close();
+
     }
 
     /**
@@ -276,7 +322,7 @@ public class QuiverResultsConverter {
     public int run() {
 
         try (BinaryRateWriter brw = getWriter()) {
-            final RateData rateData = convertResults();
+            RateData rateData = convertResults();
             final Set<RateRecord> records = rateData.getRecordSet();
 
             records.forEach(record -> writeRecord(brw, record));
@@ -288,7 +334,12 @@ public class QuiverResultsConverter {
         }
 
         if (isSender == 0) {
-            createHDRLatencyFile();
+            try {
+                createHDRLatencyFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return 1;
+            }
         }
         return 0;
     }
