@@ -194,14 +194,14 @@ public class QuiverResultsConverter {
         File output;
 
         if (isSender == 1) {
-            outputFolder = new File(dataInputFile.getParent(), "sender/");
+            outputFolder = new File(dataInputFile.getParent(), "sender-converted/");
             if (!outputFolder.exists()) {
                 outputFolder.mkdirs();
             }
             output = new File(outputFolder, outputFileName);
             brw = new BinaryRateWriter(output, FileHeader.WRITER_DEFAULT_SENDER);
         } else {
-            outputFolder = new File(dataInputFile.getParent(), "receiver/");
+            outputFolder = new File(dataInputFile.getParent(), "receiver-converted/");
             if (!outputFolder.exists()) {
                 outputFolder.mkdirs();
             }
@@ -264,9 +264,9 @@ public class QuiverResultsConverter {
         BufferedWriter bw;
         String path = jsonFile.getAbsolutePath();
         if (isSender == 1) {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "sender/test.properties")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "sender-converted/test.properties")));
         } else {
-            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "receiver/test.properties")));
+            bw = new BufferedWriter(new FileWriter(path.replace(jsonFile.getName(), "receiver-converted/test.properties")));
         }
         bw.write("#maestro-quiver-agent\n");
         bw.append("fcl=0\n");
@@ -305,7 +305,7 @@ public class QuiverResultsConverter {
         }
         latencyEvaluator.record(histogram);
 
-        LatencyWriter lw = new LatencyWriter(new File(baseDir, "receiver/receiverd-latency.hdr"));
+        LatencyWriter lw = new LatencyWriter(new File(baseDir, "receiver-converted/receiverd-latency.hdr"));
         lw.outputLegend(startedEpochMillis);
         lw.outputIntervalHistogram(histogram);
 
